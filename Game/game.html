@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script type="text/javascript" src="jquery-1.10.2.min.js"></script>
+    <style media="screen">
+      body,html,h1,h2,h3,h4,h5,h6,img{
+        margin:0px;
+        padding: 0px;
+        width: 100%;
+      }
+      body{
+        background: #050505;
+      }
+      .line{
+        margin: 80%;
+        display: inline-block;
+      }
+      canvas{
+        border: 1px solid black;
+        display: block;
+        position: absolute;
+        top:50px;
+        left:350px;
+      }
+      #glazav{
+        opacity: 0;
+      }
+      .demon1{
+        position: absolute;
+        display: block;
+        width: 400px;
+        height: 400px;
+        top:150px;
+        left:-40px;
+      }
+      #glazak{
+        margin-left: 0;
+      }
+      .demon2{
+        position: absolute;
+        display: block;
+        width: 400px;
+        height: 400px;
+        top:150px;
+        left:900px;
+      }
+      #hero{
+        position: absolute;
+      }
+      #home{
+        position: absolute;
+      }
+      #all{
+        display: inline-block;
+      }
+      #c0{display: inline-block;background-color: green;}
+      #c1{display: inline-block;background-color: red;}
+      #c2{display: inline-block;background-color: red;}
+      #c3{display: inline-block;background-color: red;}
+      .ss{
+        display: none;
+		    opacity: 0.8;
+		    position: fixed;
+		    left: 0;
+		    right: 0;
+		    top: 0;
+		    bottom: 0;
+		    padding: 16px;
+		    background-color: rgba(1, 1, 1, 1);
+		    z-index: 100;
+		    overflow: auto;
+      }
+      .sss{
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        background: -webkit-gradient(linear, left top, left bottom, from(#111), to(#522)) fixed;
+		    z-index: 200;
+        display: none;
+		    position: fixed;
+		    left: 0;
+		    right: 0;
+		    top: 0;
+	      bottom: 0;
+		    padding: 16px;
+      }
+      .ssa{
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        display:none;
+        background-image: url("krov.jpg");
+        z-index: 200;
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        padding: 16px;
+      }
+      @font-face {
+        font-family: 'My';
+        src: url('css/Last N Line.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+      }
+      #name{
+        outline: none;
+        border: none;
+        border-radius: 5px;
+        background: #332225;
+        color:red;
+        font-size: 200%;
+        font-family: My;
+        width:400px;
+        height: 100px;
+      }
+      input,button{
+        border:none;
+        background: #332225;
+          color:red;
+          font-family: My;
+          font-size: 110%;
+          width:200px;
+          height: 200px;
+          border-radius: 100px;
+      }
+      input,button:hover{
+        border:none;
+        background: #553335;
+      }
+      #butOK{
+        color:red;
+        font-family: My;
+        font-size: 110%;
+        width:100px;
+        height: 100px;
+        border-radius: 50px;
+      }
+
+    </style>
+  </head>
+  <body onkeyup="btn(event)">
+    <div class="ss"></div>
+      <form class="" action="write.php" method="get">
+        <div class="ssa">
+          <input type="text" name="name" value="" id='name' placeholder="Write your name">
+          <br><input type="button" id="butOK" value="OK" onclick="menu()">
+          <input type="text" name="win" id='win' value="" hidden="hidden">
+        </div>
+        <div class="sss">
+          <input type="submit" name="btn2" value="main menu">
+            <input type="submit" name="btn1" value="restart">
+        </div>
+      </form>
+        <img src="v.png" alt="" class="demon1"/><img src="vg.png" alt="" id="glazav" class="demon1"/>
+        <canvas id="canvas" width="600px" height="600px"></canvas>
+        <img src="kr.png" alt="" class="demon2"/><img src="krg.png" alt="" id="glazak" class="demon2"/>
+      <img src="playeridle.gif" id="hero" alt="" />
+      <img src="sv.png" id="home" alt="" />
+      <img src="monstr.gif" id="monstr" alt=""/>
+      <button type="button" onclick="next_round()" id="q">go to the next round</button>
+
+
+    <script type="text/javascript">
+        var canvas=document.getElementById('canvas');
+        var ctx=canvas.getContext('2d');
+        var n=5,finish,path,corX,corY,win=1,interval,dir,animation,bb=1,monster,rule;
+        var image=document.getElementById('home');
+        var path_monster="";
+        var v=document.getElementById('hero');
+        $("#q").hide();
+        $("#monstr").hide();
+        document.getElementById('name').value=localStorage.lastname;
+        function menu(){
+          var name = document.getElementById('name').value+"";
+          if(name.length>0){
+              document.getElementById('win').value=win+"";
+              localStorage.setItem("lastname",name)
+              $(".ssa").css({"display":"none"});
+              $(".sss").css({"display":"block"});
+          }
+        }
+        function game_over(){
+            $(".ss").css({"display":"block"});
+            $(".ssa").css({"display":"block"});
+            clearInterval(interval);
+            clearInterval(monster);
+        }
+        function next_round() {
+          $("#q").hide();
+          $("#monstr").hide();
+          console.log(monster);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          game();
+        }
+        function go(t,l){
+          $("#hero").animate({
+              top:parseFloat(v.style.top)+t+"px",
+              left:parseFloat(v.style.left)+l+"px"
+            },{
+              duration:600,
+              start:function(){
+                animation=1;
+                if(t>0)v.src="player_down.gif";
+                else if(t<0)v.src="player_up.gif";
+                else if(l>0)v.src="player_right.gif";
+                else if(l<0)v.src="player_left.gif";
+              },
+              complete:function() {
+                animation=0;
+                v.src="playeridle.gif";
+                if(corX*n+corY==finish){
+                  clearInterval(interval);
+                  clearInterval(monster);
+                  n++;
+                  win++;
+                  bb=0;
+                  $("#q").show();
+                }
+              }
+            }
+          );
+        }
+        function change(x){
+            x%=4;
+            console.log(x);
+            if(animation==0 && rule==0){
+              if(x==0){
+                  if(path[corX*n+corY].indexOf('U')>-1){
+                    if (path_monster[path_monster.length-1]=='D') path_monster=path_monster.slice(0,-1);
+                    else path_monster+="U";
+                    go(-600/n,0);
+                    corX--;
+                  }
+              }
+              else if(x==3){
+                if(path[corX*n+corY].indexOf('L')>-1){
+                  if (path_monster[path_monster.length-1]=='R') path_monster=path_monster.slice(0,-1);
+                  else path_monster+="L";
+                  go(0,-600/n);
+                    corY--;
+                }
+              }
+              else if(x==1){
+                if(path[corX*n+corY].indexOf('R')>-1){
+                  if (path_monster[path_monster.length-1]=='L') path_monster=path_monster.slice(0,-1);
+                  else path_monster+="R";
+                  go(0,600/n);corY++;
+                }
+              }
+              else if(path[corX*n+corY].indexOf('D')>-1){
+                if (path_monster[path_monster.length-1]=='U') path_monster=path_monster.slice(0,-1);
+                else path_monster+="D";
+                    go(600/n,0);corX++;
+              }
+            }
+            console.log(path_monster);
+        }
+        function btn(event) {
+
+          if(bb==1){
+            if(event.keyCode==38)change(0+dir); //up
+            else if(event.keyCode==37)change(3+dir); //left
+            else if(event.keyCode==39)change(1+dir); //right
+            else if(event.keyCode==40)change(2+dir); //down
+          }
+        }
+        function game(){
+          path_monster="";
+          var a=[],res=[],used=[],k,kol=0,z,maxx=-1;
+          path=[]
+          finish=-1;
+          corX=corY=dir=animation=z=k=0;
+          function item(W,X,Y){
+              this.x=X;
+              this.y=Y;
+              this.z=W;
+          }
+          function Road(X,Y){
+              this.x=X;
+              this.y=Y;
+          }
+          function drawLine(x1,y1,x2,y2) {
+            ctx.beginPath();
+            ctx.lineWidth=3;
+            ctx.strokeStyle="white";
+            ctx.moveTo(x1,y1);
+            ctx.lineTo(x2,y2);
+            ctx.stroke();
+          }
+          function dfs(v,sum){
+              if(path[v].length==1 && sum>maxx){
+                  maxx=sum;
+                  finish=v;
+              }
+              used[v]=1;
+              if(v+1<n*n)
+                if(used[v+1]==0 && path[v].indexOf('R')>-1)dfs(v+1,sum+1);
+              if(v+n<n*n)
+                if(used[v+n]==0 && path[v].indexOf('D')>-1)dfs(v+n,sum+1);
+              if(v-1>-1)
+                if(used[v-1]==0 && path[v].indexOf('L')>-1)dfs(v-1,sum+1);
+              if(v-n>-1)
+                if(used[v-n]==0 && path[v].indexOf('U')>-1)dfs(v-n,sum+1);
+          }
+          for (var i=0;i<n*n;i++){used.push(i);}
+          for (var i=1;i<=n* n-n;i++){
+              a.push(new item(Math.floor(Math.random()*10000),i,i+n));
+              kol++;
+              if(i%n!=0){
+                  a.push(new item(Math.floor(Math.random()*10000),i,i+1));
+                  kol++;
+              }
+          }
+          for(var i=n*n-n+1;i<n*n;i++){
+            a.push(new item(Math.floor(Math.random()*10000),i,i+1))
+            kol++;
+            }
+
+          a.sort(function(l,r){
+              if(l.z>r.z)return 1;
+              if(l.z<r.z)return -1;
+              return 0;
+          });
+          for(var i=0;i<kol;i++){
+              var ux=a[i].x-1,uy=a[i].y-1;
+              if(used[ux]!=used[uy]){
+                  k++;
+                  var old_id=used[ux],new_id=used[uy];
+                  res.push(new Road(ux,uy));
+                  for (var j=0;j<n*n;j++)if(used[j]==old_id)used[j]=new_id;
+              }
+              if(k==n*n-1)break;
+          }
+          var c=new Image();
+          c.src="pole.jpg";
+            c.onload=function(){
+              for(var i=0;i<n;i++)
+                for(var j=0;j<n;j++)
+                  ctx.drawImage(c,i*600/n,j*600/n,600/n,600/n);
+            }
+
+          for(var i=0;i<n*n;i++){
+            used[i]=0;
+          }
+          for(var i=0;i<n*n;i++){
+              var s="";
+              for(var j=0;j<n*n-1;j++){
+                  if(i==res[j].x){
+                      if(res[j].x+n==res[j].y)s+="D";
+                      else if(res[j].x+1==res[j].y)s+="R";
+                  }
+                  if(i==res[j].y){
+                      if(res[j].y-n==res[j].x)s+="U";
+                      else if(res[j].x+1==res[j].y)s+="L";
+                  }
+              }
+              path.push(s);
+          }
+          var d=new Image();
+          d.src="horizontal.png";
+          d.onload=function(){
+
+            for(var i=0;i<n*n;i++){
+                var k=Math.floor(i/n),j=i%n;
+                if(path[i].indexOf('U')===-1)ctx.drawImage(d,j*600/n,k*600/n-20,600/n,40);
+                if(path[i].indexOf('D')===-1)ctx.drawImage(d,(j)*600/n,(k+1)*600/n-20,600/n,40);
+                }
+          }
+
+          var e=new Image();
+          e.src="vertical.png";
+          e.onload=function(){
+
+            for(var i=0;i<n*n;i++){
+                var k=Math.floor(i/n),j=i%n;
+                if(path[i].indexOf('L')===-1)ctx.drawImage(e,j*600/n-20,k*600/n,40,600/n);
+                if(path[i].indexOf('R')===-1)ctx.drawImage(e,(j+1)*600/n-20,k*600/n ,40,600/n);
+              }
+          }
+          dfs(0,0);
+          if(dir==0)
+          {
+            $(".demon1").animate({"opacity":1},500);
+          $("#glazav").animate({"opacity":0},500);
+          $(".demon2").animate({"opacity":0.05},500);}
+
+          v.style.height=600/n-4+"px"; v.style.width=600/n-4+"px"; v.style.top=50+2+"px"; v.style.left=350+2+"px";
+          image.style.height=600/n-4+"px"; image.style.width=600/n-4+"px";
+          image.style.top=50+2+600/n*Math.floor(finish/n)+"px"; image.style.left=350+600/n*(finish%n)+1+"px";
+          var last=0,ii=0,mnt=document.getElementById('monstr').style;
+          bb=1;rule=0;
+          interval=setInterval(function () {
+            console.log(rule);
+            if(rule>0)clearInterval(interval);
+            if(ii!=3)ii++;
+            last=dir;//0 1 2 3
+
+            while(dir==last && last!=null && rule==0)dir=Math.floor(Math.random()*4);
+            $(function(){
+              if(dir==0)
+              {
+                $(".demon1").animate({"opacity":1},500);
+              $("#glazav").animate({"opacity":0},500);
+              $(".demon2").animate({"opacity":0.05},500);}
+              else if(dir==3)
+              {$(".demon2").animate({"opacity":1},500);
+              $("#glazak").animate({"marginLeft":0},500);
+              $(".demon1").animate({"opacity":0.05},500);}
+              else if(dir==2)
+              {$(".demon1").animate({"opacity":1},500);
+              $("#glazav").animate({"opacity":1},500);
+              $(".demon2").animate({"opacity":0.05},500);}
+              else if(dir==1)
+              {$(".demon2").animate({"opacity":1},500);
+              $("#glazak").animate({"marginLeft":-10},500);
+              $(".demon1").animate({"opacity":0.05},500);}
+            });
+            if(ii==1){
+                $("#monstr").show();
+                $("#monstr").css({"position":"absolute","width":600/n-4+"px","height":600/n-4+"px","top":"52px","left":352+"px"});
+                if(path_monster.length==0)animation=1,game_over();
+                monster=setInterval(function(){
+                    console.log(rule);
+                    if(rule>0)clearInterval(monster);
+                        var step=path_monster[0],t,l;
+                        console.log("im monster"+monster);
+                        console.log("im interval"+ interval);
+                        path_monster=path_monster.slice(1);
+                        if(step=="L")l=-600/n;
+                        else if(step=="R")l=600/n;
+                        else if(step=="U")t=-600/n;
+                        else if(step=="D")t=600/n;
+                        console.log(step+" "+l+" "+t+" "+path_monster+" mnt");
+                        $("#monstr").animate({top:parseFloat(mnt.top)+t+"px",left:parseFloat(mnt.left)+l+"px"},{
+                            duration:800,
+                            start:function () {
+                              if(path_monster.length==0)animation=1;
+
+                            },
+                            complete:function(){
+                              if(path_monster.length==0)animation=1,game_over();
+                            }
+                        });
+
+                },800);
+                ii=3;
+            }
+          }, 4000);
+
+        }
+
+
+        game(0);
+
+    </script>
+  </body>
+</html>
